@@ -140,3 +140,29 @@ export function substituteSnippetNames(
 
 	return out;
 }
+
+/**
+ * Names in `abbr` that `isSnippet` accepts, at the positions where a snippet would
+ * actually resolve.
+ *
+ * Shares the scanner above so the two can never disagree about what counts as a
+ * snippet reference; reporting `false` leaves the abbreviation untouched, since
+ * only the positions matter here.
+ */
+export function referencedSnippetNames(
+	abbr: string,
+	isSnippet: (name: string) => boolean,
+): string[] {
+	const names: string[] = [];
+	substituteSnippetNames(
+		abbr,
+		(name) => {
+			if (isSnippet(name)) {
+				names.push(name);
+			}
+			return false;
+		},
+		(name) => name,
+	);
+	return names;
+}

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Preview expansions as you type in the editor, via a completion item whose details pane shows the expanded markup — the same shape as Emmet's own abbreviation completion. Gated to abbreviations using a keyword or snippet so it does not duplicate Emmet's suggestions; widen it with `templet.suggestPlainEmmet`, or disable it with `templet.suggest`.
+- Resolved configuration is cached per workspace folder and invalidated on settings, config-file and folder changes, since the suggestion path resolves it on every keystroke.
+
 ## 0.1.0
 
 Initial release.

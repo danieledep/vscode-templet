@@ -30,7 +30,9 @@
     "templating"
   ],
   "main": "./out/extension.js",
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "commands": [
       {
@@ -117,6 +119,18 @@
           "default": true,
           "description": "Show a live preview of the expansion while typing in the abbreviation input box.",
           "scope": "window"
+        },
+        "templet.suggest": {
+          "type": "boolean",
+          "default": true,
+          "description": "Suggest the expansion of the abbreviation before the cursor as you type, previewing the result in the suggestion details.",
+          "scope": "resource"
+        },
+        "templet.suggestPlainEmmet": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Also suggest abbreviations that use no keyword and no Templet snippet. Off by default because VS Code's built-in Emmet already offers those wherever `#emmet.includeLanguages#` maps your language to HTML; turn it on if you have not configured that.",
+          "scope": "resource"
         },
         "templet.configFile": {
           "type": "string",
