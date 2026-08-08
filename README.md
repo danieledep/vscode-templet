@@ -31,7 +31,11 @@ Extending Emmet's own snippet system doesn't work either: markup snippets have t
 | **Templet: Expand Abbreviation…** | `Ctrl+Alt+Enter` (`Cmd+Alt+Enter`) | Prompts for an abbreviation, with a live preview. Wraps the selection if there is one. |
 | **Templet: Expand Abbreviation Before Cursor** | `Ctrl+Alt+E` (`Cmd+Alt+E`) | Expands the abbreviation already typed in the document, like Emmet's own expand. |
 
-The input box previews the expansion as you type, so you can see the shape before committing to it.
+### Wrapping, previewed in the document
+
+Select some markup, run **Expand Abbreviation…**, and the wrap appears **in the editor** as you type — real, syntax-coloured, indented in place. Cancel with `Esc` and the document goes back exactly as it was; accept and the expansion is inserted as a snippet, so the tabstops are live.
+
+Set `templet.preview` to `input` to render it under the input box instead, or `off` for no preview.
 
 ### Preview as you type in the editor
 
@@ -203,7 +207,7 @@ It must be strict JSON — comments and trailing commas are not supported. Mista
 | `templet.snippets` | `{}` | Named snippet bodies. |
 | `templet.keywords` | `{}` | Keyword tables, merged over the built-in dialects. |
 | `templet.languages` | `{}` | Language id → dialect, merged over the built-in mapping. |
-| `templet.preview` | `true` | Live preview under the input box. |
+| `templet.preview` | `editor` | How the input box previews: `editor`, `input` or `off`. |
 | `templet.inlinePreview` | `true` | Preview the expansion as ghost text in the editor. |
 | `templet.suggest` | `true` | Also offer the expansion in the suggestion list. |
 | `templet.suggestPlainEmmet` | `false` | Also suggest abbreviations using no keyword or snippet. |

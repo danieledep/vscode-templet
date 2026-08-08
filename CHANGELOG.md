@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Preview a wrap **in the document itself** while typing in the abbreviation input box, the way Emmet's Wrap with Abbreviation does. The expansion is written into the editor so it is syntax-coloured and indented in place, and reverted when the prompt closes; accepting inserts the real snippet so tabstops stay live. `templet.preview` is now `editor` (default), `input` or `off`.
+
 - Keep the input box's preview readable when wrapping: the selection renders as a short placeholder rather than in full, and the preview is capped at 24 lines. Wrapping a large block previously filled the box with its own text and hid the shape being wrapped around it.
 
 - Tag the suggestion's preview with HTML when the document language has no grammar, so a `.liquid` file opened as plain text still gets a syntax-coloured preview instead of flat grey text.
