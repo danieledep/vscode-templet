@@ -142,8 +142,8 @@
         },
         "templet.inlinePreview": {
           "type": "boolean",
-          "default": true,
-          "markdownDescription": "Preview the expansion as ghost text in the editor while you type, accepted with `Tab`. VS Code hides inline suggestions while the suggestion list is open, so turn off `#templet.suggest#` to leave only the ghost text.",
+          "default": false,
+          "markdownDescription": "Preview the expansion as dimmed ghost text in the editor, accepted with `Tab`. Off by default: VS Code hides inline suggestions while the suggestion list is open, so this does nothing unless `#templet.suggest#` is also turned off.",
           "scope": "resource"
         },
         "templet.suggestPlainEmmet": {
