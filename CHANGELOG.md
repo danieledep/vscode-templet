@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Warn on startup, and when settings change, if both `templet.suggest` and `templet.inlinePreview` are off — that combination silently disables typing in the editor and hands abbreviations to built-in Emmet, which looks like a bug rather than a setting.
+- Mark the suggestion "Templet" in the list, so it is distinguishable from the identically-labelled entry built-in Emmet offers for the same text.
+- Report both switches in **Templet: Diagnose Current File**.
+
 - Default `templet.inlinePreview` to off. VS Code suppresses inline suggestions while the suggestion list is open, so it never showed unless `templet.suggest` was also turned off — and turning that off left no Templet suggestion at all, sending abbreviations to built-in Emmet instead.
 
 - Preview a wrap **in the document itself** while typing in the abbreviation input box, the way Emmet's Wrap with Abbreviation does. The expansion is written into the editor so it is syntax-coloured and indented in place, and reverted when the prompt closes; accepting inserts the real snippet so tabstops stay live. `templet.preview` is now `editor` (default), `input` or `off`.

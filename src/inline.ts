@@ -23,7 +23,7 @@ export class InlinePreviewProvider implements vscode.InlineCompletionItemProvide
 		position: vscode.Position,
 	): Promise<vscode.InlineCompletionItem[] | undefined> {
 		const settings = vscode.workspace.getConfiguration('templet', document.uri);
-		if (!settings.get<boolean>('inlinePreview', true)) {
+		if (!settings.get<boolean>('inlinePreview', false)) {
 			return undefined;
 		}
 

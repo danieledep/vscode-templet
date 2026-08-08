@@ -48,8 +48,12 @@ export class AbbreviationCompletionProvider implements vscode.CompletionItemProv
 			return undefined;
 		}
 
-		const item = new vscode.CompletionItem(offer.abbreviation, vscode.CompletionItemKind.Snippet);
-		item.detail = 'Templet';
+		// Built-in Emmet offers an identically-labelled item for the same text, so
+		// the source is spelled out to make which is which visible at a glance.
+		const item = new vscode.CompletionItem(
+			{ label: offer.abbreviation, description: 'Templet' },
+			vscode.CompletionItemKind.Snippet,
+		);
 		item.documentation = new vscode.MarkdownString().appendCodeblock(
 			toPlainText(offer.expanded),
 			fenceLanguage(document),
