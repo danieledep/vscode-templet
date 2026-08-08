@@ -146,7 +146,12 @@ async function diagnoseCommand(configs: ConfigCache, output: vscode.OutputChanne
 	lines.push(
 		`snippets:      ${snippetNames.length > 0 ? snippetNames.join(' ') : 'none (templet.snippets is empty)'}`,
 	);
-	lines.push(`suggest:       ${suggest}${plainEmmet ? ' (including plain Emmet)' : ''}`);
+	const inlinePreview = settings.get<boolean>('inlinePreview', false);
+	lines.push(`templet.suggest:       ${suggest}${plainEmmet ? '  (including plain Emmet)' : ''}`);
+	lines.push(`templet.inlinePreview: ${inlinePreview}`);
+	if (!suggest && !inlinePreview) {
+		lines.push('  <-- both off: typing does nothing, abbreviations fall through to Emmet');
+	}
 
 	const caret = editor.selection.active;
 	const found = extract(document.lineAt(caret.line).text, caret.character);
@@ -175,13 +180,45 @@ async function diagnoseCommand(configs: ConfigCache, output: vscode.OutputChanne
 	output.show(true);
 }
 
+/**
+ * Warns when configuration has switched off every in-editor entry point.
+ *
+ * With both off, typing an abbreviation does nothing and it falls through to
+ * built-in Emmet, which expands `if>div.red` to a literal `<if>` tag. That looks
+ * like Templet misbehaving rather than Templet being switched off, so it is worth
+ * saying out loud.
+ */
+function warnIfSilenced(): void {
+	const settings = vscode.workspace.getConfiguration('templet');
+	if (settings.get<boolean>('suggest', true) || settings.get<boolean>('inlinePreview', false)) {
+		return;
+	}
+	void vscode.window
+		.showWarningMessage(
+			'Templet: both "templet.suggest" and "templet.inlinePreview" are off, so typing an abbreviation in the editor does nothing — it falls through to built-in Emmet.',
+			'Open settings',
+		)
+		.then((choice) => {
+			if (choice) {
+				void vscode.commands.executeCommand('workbench.action.openSettings', 'templet.suggest');
+			}
+		});
+}
+
 export function activate(context: vscode.ExtensionContext): void {
 	const output = vscode.window.createOutputChannel('Templet');
 	const configs = new ConfigCache((problems) => reportProblems(problems, output));
 
+	warnIfSilenced();
+
 	context.subscriptions.push(
 		output,
 		configs,
+		vscode.workspace.onDidChangeConfiguration((event) => {
+			if (event.affectsConfiguration('templet')) {
+				warnIfSilenced();
+			}
+		}),
 		vscode.commands.registerCommand('templet.expand', () => expandCommand(configs, output)),
 		vscode.commands.registerCommand('templet.expandInline', () =>
 			expandInlineCommand(configs, output),
