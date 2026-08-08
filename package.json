@@ -1,0 +1,144 @@
+{
+  "name": "templet",
+  "displayName": "Templet",
+  "description": "Emmet-style abbreviations that compose template-language keywords, plain Emmet and your own snippets in one expression.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "publisher": "danieledep",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danieledep/vscode-if-only-emmet.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Snippets",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "emmet",
+    "liquid",
+    "twig",
+    "blade",
+    "jinja",
+    "nunjucks",
+    "handlebars",
+    "erb",
+    "snippets",
+    "templating"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "templet.expand",
+        "title": "Templet: Expand Abbreviation…",
+        "enablement": "editorTextFocus"
+      },
+      {
+        "command": "templet.expandInline",
+        "title": "Templet: Expand Abbreviation Before Cursor",
+        "enablement": "editorTextFocus"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "templet.expand",
+        "key": "ctrl+alt+enter",
+        "mac": "cmd+alt+enter",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "templet.expandInline",
+        "key": "ctrl+alt+e",
+        "mac": "cmd+alt+e",
+        "when": "editorTextFocus && !editorHasSelection"
+      }
+    ],
+    "configuration": {
+      "title": "Templet",
+      "properties": {
+        "templet.snippets": {
+          "type": "object",
+          "default": {},
+          "markdownDescription": "Named snippets usable as abbreviation segments. Keys are names, values are snippet bodies with `\\t` indentation and `${1:placeholder}` tabstops. A snippet name shadows the built-in Emmet snippet of the same name.",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "scope": "resource"
+        },
+        "templet.keywords": {
+          "type": "object",
+          "default": {},
+          "markdownDescription": "Template-language keywords, keyed by dialect then keyword name. Merged over the built-in dialects, so you can add keywords or override built-in ones. Each keyword is `{ \"open\": \"…\", \"close\": \"…\", \"defaultArg\": \"…\", \"branch\": false }`. Use `${arg}` in `open` for the keyword argument, and write a literal dollar sign as `\\$`.",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "open": {
+                  "type": "string",
+                  "description": "Opening tag. May contain ${arg} and snippet tabstops."
+                },
+                "close": {
+                  "type": "string",
+                  "description": "Closing tag. Empty for branch keywords."
+                },
+                "defaultArg": {
+                  "type": "string",
+                  "description": "Placeholder used when the abbreviation gives no argument."
+                },
+                "branch": {
+                  "type": "boolean",
+                  "description": "True for keywords like else/elsif that continue an enclosing block instead of opening their own."
+                }
+              },
+              "required": [
+                "open"
+              ]
+            }
+          },
+          "scope": "resource"
+        },
+        "templet.languages": {
+          "type": "object",
+          "default": {},
+          "markdownDescription": "Maps a VS Code language id to a Templet dialect, e.g. `{ \"html\": \"twig\" }`. Merged over the built-in mapping.",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "scope": "resource"
+        },
+        "templet.preview": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a live preview of the expansion while typing in the abbreviation input box.",
+          "scope": "window"
+        },
+        "templet.configFile": {
+          "type": "string",
+          "default": "templet.json",
+          "description": "Workspace-relative file holding project-specific keywords, snippets and language mappings. Values here win over user settings.",
+          "scope": "resource"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node --test \"out/test/**/*.test.js\"",
+    "vscode:prepublish": "npm run compile"
+  },
+  "dependencies": {
+    "emmet": "^2.4.11"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.9.3"
+  }
+}
