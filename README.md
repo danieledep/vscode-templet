@@ -46,27 +46,19 @@ if>div.card>image
 {% endif %}
 ```
 
-The same expansion is also offered in the suggestion list, where the markup renders in the details pane.
+The same expansion is also offered in the suggestion list, with the markup rendered in its details pane.
 
-**If you only see the suggestion list and no ghost text:** VS Code hides inline suggestions while the suggest widget is open. Either set `templet.suggest` to `false` to leave the ghost text on its own, or turn on VS Code's `editor.suggest.preview` to preview the highlighted suggestion inline. The suggest widget's details pane is collapsed until you press `Ctrl+Space` or click the chevron, which is why the expansion can look missing there.
+**If you see the suggestion list but no ghost text**, that's expected with both on: VS Code hides inline suggestions while the suggest widget is open, and the widget's details pane stays collapsed until you press `Ctrl+Space`, which makes the preview look missing. Pick whichever you prefer:
 
-Both are configurable: `templet.inlinePreview` for the ghost text, `templet.suggest` for the list.
+| Want | Setting |
+| --- | --- |
+| Ghost text only | `templet.suggest: false` |
+| List only | `templet.inlinePreview: false` |
+| List, previewed inline as you move through it | VS Code's `editor.suggest.preview: true` |
 
-```
-if>div.card#hero>image      ← typing this in a .liquid file
-┌──────────────────────────────────────────┐
-│ if>div.card#hero>image        Templet    │  ← suggestion
-├──────────────────────────────────────────┤
-│ {% if condition %}                       │  ← details pane
-│   <div class="card" id="hero">           │
-│     <img src="src" alt="alt" …>          │
-│ {% endif %}                              │
-└──────────────────────────────────────────┘
-```
+### What gets suggested
 
-By default the suggestion appears only when the abbreviation uses a **keyword or a Templet snippet** — something Emmet cannot expand on its own. Plain abbreviations like `ul>li*3` are left to VS Code's built-in Emmet so you don't get two competing suggestions for the same thing. If you haven't pointed Emmet at your template language via `emmet.includeLanguages`, set `templet.suggestPlainEmmet` to `true` and Templet will offer those too.
-
-Turn the whole thing off with `templet.suggest: false`.
+By default, only abbreviations using a **keyword or a Templet snippet** — something Emmet cannot expand on its own. Plain abbreviations like `ul>li*3` are left to VS Code's built-in Emmet so you don't get two competing suggestions for the same thing. If you haven't pointed Emmet at your template language via `emmet.includeLanguages`, set `templet.suggestPlainEmmet` to `true` and Templet will offer those too.
 
 ### Wrapping a selection
 
