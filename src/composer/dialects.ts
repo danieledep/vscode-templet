@@ -1,4 +1,4 @@
-import type { Dialect } from './types';
+import type { ComposerConfig, Dialect } from './types';
 
 /**
  * Built-in keyword tables.
@@ -190,3 +190,63 @@ export const BUILTIN_LANGUAGES: Record<string, string> = {
 	'html.erb': 'erb',
 	'erb-html': 'erb',
 };
+
+/**
+ * File extension -> dialect, checked when the language id maps to nothing.
+ *
+ * VS Code has no built-in knowledge of `.liquid`, `.twig`, `.njk` or `.erb`, so
+ * without a dedicated language extension installed those files come through as
+ * `plaintext` and mapping by language id alone would leave Templet inert in exactly
+ * the files it exists for. Longest match wins, so `.blade.php` beats `.php`.
+ */
+export const BUILTIN_FILE_EXTENSIONS: Record<string, string> = {
+	'.liquid': 'liquid',
+	'.twig': 'twig',
+	'.jinja': 'jinja',
+	'.jinja2': 'jinja',
+	'.j2': 'jinja',
+	'.njk': 'nunjucks',
+	'.nunjucks': 'nunjucks',
+	'.erb': 'erb',
+	'.html.erb': 'erb',
+	'.blade.php': 'blade',
+	'.hbs': 'handlebars',
+	'.handlebars': 'handlebars',
+};
+
+const EXTENSIONS_BY_LENGTH = Object.entries(BUILTIN_FILE_EXTENSIONS).sort(
+	([a], [b]) => b.length - a.length,
+);
+
+/**
+ * Picks the dialect for a document, given its language id and path.
+ *
+ * Precedence: an explicit `templet.languages` or built-in language mapping, then a
+ * dialect named after the language id, then the file extension. Falling back to the
+ * language id last means defining a dialect named after a language is enough to
+ * wire it up.
+ *
+ * Pure, so the resolution order is testable without an editor.
+ */
+export function resolveDialect(
+	languageId: string,
+	filePath: string,
+	config: ComposerConfig,
+): string {
+	const mapped = config.languages[languageId];
+	if (mapped) {
+		return mapped;
+	}
+	if (config.dialects[languageId]) {
+		return languageId;
+	}
+
+	const path = filePath.toLowerCase();
+	for (const [extension, dialect] of EXTENSIONS_BY_LENGTH) {
+		if (path.endsWith(extension)) {
+			return dialect;
+		}
+	}
+
+	return languageId;
+}

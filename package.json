@@ -44,6 +44,10 @@
         "command": "templet.expandInline",
         "title": "Templet: Expand Abbreviation Before Cursor",
         "enablement": "editorTextFocus"
+      },
+      {
+        "command": "templet.diagnose",
+        "title": "Templet: Diagnose Current File"
       }
     ],
     "keybindings": [
@@ -144,7 +148,7 @@
   "scripts": {
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "test": "npm run compile && node --test \"out/test/**/*.test.js\"",
+    "test": "npm run compile && cd out && node --test",
     "vscode:prepublish": "npm run compile"
   },
   "dependencies": {

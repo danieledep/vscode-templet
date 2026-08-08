@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { extract } from 'emmet';
-import { AbbreviationError, compose, preview } from './composer';
+import { AbbreviationError, compose, involvesTemplet, preview } from './composer';
 import type { ComposerConfig } from './composer';
 import { ConfigCache, dialectFor } from './config';
 import { AbbreviationCompletionProvider, TRIGGER_CHARACTERS } from './suggest';
@@ -143,6 +143,72 @@ async function expandInlineCommand(
 	}
 }
 
+/**
+ * Reports why Templet is or is not active in the current file.
+ *
+ * "Nothing happens" has several plausible causes — the language maps to no dialect,
+ * snippets are unconfigured, suggestions are switched off, the abbreviation uses
+ * nothing Templet handles — and they are indistinguishable from the outside. This
+ * prints all of them at once.
+ */
+async function diagnoseCommand(configs: ConfigCache, output: vscode.OutputChannel): Promise<void> {
+	const editor = vscode.window.activeTextEditor;
+	const lines = ['=== Templet diagnostics ==='];
+
+	if (!editor) {
+		lines.push('No active editor.');
+		output.appendLine(lines.join('\n'));
+		output.show(true);
+		return;
+	}
+
+	const document = editor.document;
+	const config = await configs.get(document);
+	const dialect = dialectFor(document, config);
+	const keywords = config.dialects[dialect];
+	const settings = vscode.workspace.getConfiguration('templet', document.uri);
+	const suggest = settings.get<boolean>('suggest', true);
+	const plainEmmet = settings.get<boolean>('suggestPlainEmmet', false);
+
+	lines.push(`file:          ${document.uri.fsPath}`);
+	lines.push(`languageId:    ${document.languageId}`);
+	lines.push(
+		`dialect:       ${dialect}${keywords ? '' : '   <-- unknown, so keywords are unavailable here'}`,
+	);
+	lines.push(`keywords:      ${keywords ? Object.keys(keywords).sort().join(' ') : 'none'}`);
+	const snippetNames = Object.keys(config.snippets).sort();
+	lines.push(
+		`snippets:      ${snippetNames.length > 0 ? snippetNames.join(' ') : 'none (templet.snippets is empty)'}`,
+	);
+	lines.push(`suggest:       ${suggest}${plainEmmet ? ' (including plain Emmet)' : ''}`);
+
+	const caret = editor.selection.active;
+	const found = extract(document.lineAt(caret.line).text, caret.character);
+	if (!found?.abbreviation) {
+		lines.push('abbreviation:  none before the cursor');
+	} else {
+		const templet = involvesTemplet(found.abbreviation, dialect, config);
+		lines.push(`abbreviation:  ${found.abbreviation}`);
+		lines.push(`  uses a keyword or snippet: ${templet}`);
+		lines.push(`  would be suggested:        ${!!keywords && suggest && (templet || plainEmmet)}`);
+		try {
+			const expanded = compose(found.abbreviation, dialect, config);
+			lines.push('  expands to:');
+			lines.push(
+				expanded
+					.split('\n')
+					.map((line) => `    ${line}`)
+					.join('\n'),
+			);
+		} catch (error) {
+			lines.push(`  does not expand: ${error instanceof Error ? error.message : String(error)}`);
+		}
+	}
+
+	output.appendLine(lines.join('\n'));
+	output.show(true);
+}
+
 export function activate(context: vscode.ExtensionContext): void {
 	const output = vscode.window.createOutputChannel('Templet');
 	const configs = new ConfigCache((problems) => reportProblems(problems, output));
@@ -154,6 +220,7 @@ export function activate(context: vscode.ExtensionContext): void {
 		vscode.commands.registerCommand('templet.expandInline', () =>
 			expandInlineCommand(configs, output),
 		),
+		vscode.commands.registerCommand('templet.diagnose', () => diagnoseCommand(configs, output)),
 		// Registered for every file rather than a fixed language list, so a dialect
 		// added through `templet.languages` works without reloading the window. The
 		// provider bails immediately for languages that have no dialect.

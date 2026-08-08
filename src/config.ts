@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { BUILTIN_DIALECTS, BUILTIN_LANGUAGES } from './composer';
+import { BUILTIN_DIALECTS, BUILTIN_LANGUAGES, resolveDialect } from './composer';
 import type { ComposerConfig, Dialect, KeywordDef } from './composer';
 
 /** Shape of the workspace `templet.json`. */
@@ -161,12 +161,9 @@ export async function resolveConfig(
 	};
 }
 
-/**
- * Picks the dialect for a document. An unmapped language falls back to its own id,
- * so defining a dialect named after the language is enough to wire it up.
- */
+/** Picks the dialect for a document. See `resolveDialect` for the precedence. */
 export function dialectFor(document: vscode.TextDocument, config: ComposerConfig): string {
-	return config.languages[document.languageId] ?? document.languageId;
+	return resolveDialect(document.languageId, document.uri.path, config);
 }
 
 /**
