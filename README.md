@@ -52,19 +52,7 @@ if>div.card>image
 
 The same expansion is also offered in the suggestion list, with the markup rendered in its details pane.
 
-**You get one or the other, not both.** VS Code hides inline suggestions while the suggest widget is open, and `templet.suggest` is on by default — so out of the box you see the list, not the ghost text. To get the in-editor preview, turn the list off:
-
-```json
-"templet.suggest": false
-```
-
-Note that ghost text is always dimmed: VS Code renders inline suggestions in a single muted colour with no syntax highlighting, and no API changes that. Syntax-coloured previews only exist in the suggestion details pane — which is where Emmet's colored preview lives too. Pick whichever you prefer:
-
-| Want | Setting |
-| --- | --- |
-| Ghost text only | `templet.suggest: false` |
-| List only | `templet.inlinePreview: false` |
-| List, previewed inline as you move through it | VS Code's `editor.suggest.preview: true` |
+There is also an opt-in ghost-text mode (`templet.inlinePreview`), which draws the expansion inline in dimmed text. It is off by default and only takes effect when `templet.suggest` is *also* off, because VS Code hides inline suggestions whenever the suggestion list is open — turning `templet.suggest` off on its own leaves you with no Templet suggestion at all, and your abbreviation falls through to built-in Emmet.
 
 ### What gets suggested
 
