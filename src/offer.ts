@@ -22,9 +22,12 @@ export async function abbreviationOffer(
 	document: vscode.TextDocument,
 	position: vscode.Position,
 	configs: ConfigCache,
+	/** Receives the reason when nothing is offered, for the diagnostic. */
+	declined?: (reason: string) => void,
 ): Promise<AbbreviationOffer | undefined> {
 	const found = extract(document.lineAt(position.line).text, position.character);
 	if (!found?.abbreviation) {
+		declined?.('no abbreviation found before the cursor');
 		return undefined;
 	}
 
@@ -32,6 +35,7 @@ export async function abbreviationOffer(
 	const dialect = dialectFor(document, config);
 	// Template languages only, so a snippet named `card` cannot surface in a .ts file.
 	if (!config.dialects[dialect]) {
+		declined?.(`"${dialect}" is not a known dialect, so Templet stays out of this file`);
 		return undefined;
 	}
 
@@ -40,14 +44,18 @@ export async function abbreviationOffer(
 		!involvesTemplet(found.abbreviation, dialect, config) &&
 		!settings.get<boolean>('suggestPlainEmmet', false)
 	) {
+		declined?.(
+			`"${found.abbreviation}" uses no keyword or snippet, so it is left to Emmet (see templet.suggestPlainEmmet)`,
+		);
 		return undefined;
 	}
 
 	let expanded: string;
 	try {
 		expanded = compose(found.abbreviation, dialect, config);
-	} catch {
+	} catch (error) {
 		// Half-typed abbreviations are the normal case here.
+		declined?.(`does not expand: ${error instanceof Error ? error.message : String(error)}`);
 		return undefined;
 	}
 

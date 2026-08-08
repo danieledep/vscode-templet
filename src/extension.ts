@@ -3,6 +3,7 @@ import { extract } from 'emmet';
 import { AbbreviationError, compose, involvesTemplet } from './composer';
 import { promptForAbbreviation, targetRange, type PreviewMode } from './prompt';
 import { ConfigCache, dialectFor } from './config';
+import { abbreviationOffer } from './offer';
 import { AbbreviationCompletionProvider, TRIGGER_CHARACTERS } from './suggest';
 import { InlinePreviewProvider } from './inline';
 
@@ -153,6 +154,12 @@ async function diagnoseCommand(configs: ConfigCache, output: vscode.OutputChanne
 		lines.push('  <-- both off: typing does nothing, abbreviations fall through to Emmet');
 	}
 
+	let declined: string | undefined;
+	const offer = await abbreviationOffer(document, editor.selection.active, configs, (reason) => {
+		declined = reason;
+	});
+	lines.push(`offered here:  ${offer ? 'yes' : `no — ${declined ?? 'unknown'}`}`);
+
 	const caret = editor.selection.active;
 	const found = extract(document.lineAt(caret.line).text, caret.character);
 	if (!found?.abbreviation) {
@@ -229,7 +236,7 @@ export function activate(context: vscode.ExtensionContext): void {
 		// provider bails immediately for languages that have no dialect.
 		vscode.languages.registerCompletionItemProvider(
 			[{ scheme: 'file' }, { scheme: 'untitled' }],
-			new AbbreviationCompletionProvider(configs),
+			new AbbreviationCompletionProvider(configs, output),
 			...TRIGGER_CHARACTERS,
 		),
 		// Ghost text in the editor itself, rather than in the suggest widget.
