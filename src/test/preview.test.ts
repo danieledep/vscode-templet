@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { preview } from '../composer/preview';
+import { capLines, preview, SELECTION_PLACEHOLDER } from '../composer/preview';
 import { toPlainText } from '../composer/snippet';
 import { BUILTIN_DIALECTS } from '../composer/dialects';
 import type { ComposerConfig } from '../composer/types';
@@ -50,5 +50,29 @@ describe('preview', () => {
 	it('returns null rather than throwing when the abbreviation is rejected', () => {
 		// The core expander has no notion of Emmet's output filters.
 		assert.equal(preview('div|c', 'liquid', config), null);
+	});
+});
+
+describe('capLines', () => {
+	it('leaves a short preview alone', () => {
+		assert.equal(capLines('a\nb', 5), 'a\nb');
+	});
+
+	it('caps a long preview and says how much is hidden', () => {
+		assert.equal(capLines('a\nb\nc\nd', 2), 'a\nb\n… 2 more lines');
+	});
+
+	it('uses the singular for one hidden line', () => {
+		assert.equal(capLines('a\nb', 1), 'a\n… 1 more line');
+	});
+});
+
+describe('previewing a wrap', () => {
+	it('renders the shape around a placeholder rather than the whole selection', () => {
+		// What the input box shows while wrapping a large block.
+		assert.equal(
+			preview('if>div.card', 'liquid', config, { selection: SELECTION_PLACEHOLDER }),
+			['{% if condition %}', '\t<div class="card">…selected text…</div>', '{% endif %}'].join('\n'),
+		);
 	});
 });

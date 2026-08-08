@@ -1,10 +1,20 @@
 import * as vscode from 'vscode';
 import { extract } from 'emmet';
-import { AbbreviationError, compose, involvesTemplet, preview } from './composer';
+import {
+	AbbreviationError,
+	capLines,
+	compose,
+	involvesTemplet,
+	preview,
+	SELECTION_PLACEHOLDER,
+} from './composer';
 import type { ComposerConfig } from './composer';
 import { ConfigCache, dialectFor } from './config';
 import { AbbreviationCompletionProvider, TRIGGER_CHARACTERS } from './suggest';
 import { InlinePreviewProvider } from './inline';
+
+/** Keeps the input box's preview from growing past the space VS Code gives it. */
+const MAX_PREVIEW_LINES = 24;
 
 /**
  * The indentation the composer should emit. VS Code re-indents snippet text on
@@ -38,13 +48,23 @@ function promptForAbbreviation(
 
 		let accepted: string | undefined;
 
+		// The real selection is used for the insert, but rendering all of it here
+		// would bury the shape being wrapped around it under its own text.
+		const previewOptions = {
+			indent: options.indent,
+			selection: options.selection ? SELECTION_PLACEHOLDER : undefined,
+		};
+
 		box.onDidChangeValue((value) => {
 			if (!showPreview) {
 				return;
 			}
-			const rendered = preview(value, dialect, config, options);
+			const rendered = preview(value, dialect, config, previewOptions);
 			box.validationMessage = rendered
-				? { message: rendered, severity: vscode.InputBoxValidationSeverity.Info }
+				? {
+						message: capLines(rendered, MAX_PREVIEW_LINES),
+						severity: vscode.InputBoxValidationSeverity.Info,
+					}
 				: undefined;
 		});
 		box.onDidAccept(() => {
