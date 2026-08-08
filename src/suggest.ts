@@ -32,9 +32,28 @@ function fenceLanguage(document: vscode.TextDocument): string {
 }
 
 export class AbbreviationCompletionProvider implements vscode.CompletionItemProvider {
-	constructor(private readonly configs: ConfigCache) {}
+	constructor(
+		private readonly configs: ConfigCache,
+		private readonly output: vscode.OutputChannel,
+	) {}
 
 	async provideCompletionItems(
+		document: vscode.TextDocument,
+		position: vscode.Position,
+	): Promise<vscode.CompletionItem[] | undefined> {
+		try {
+			return await this.offer(document, position);
+		} catch (error) {
+			// VS Code swallows provider errors, which makes a broken provider look
+			// exactly like one that had nothing to say.
+			this.output.appendLine(
+				`suggest failed: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}`,
+			);
+			return undefined;
+		}
+	}
+
+	private async offer(
 		document: vscode.TextDocument,
 		position: vscode.Position,
 	): Promise<vscode.CompletionItem[] | undefined> {
