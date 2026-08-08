@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Preview the expansion as **ghost text in the editor** while typing, accepted with `Tab`, via an inline completion provider. The suggestion list could only show the expansion in its details pane, which VS Code keeps collapsed. Toggle with `templet.inlinePreview`.
+- Share the extraction, gating and expansion between the suggestion and the inline preview so the two cannot disagree about when Templet acts.
+
 - Resolve the dialect from the file extension when the language id maps to nothing, so `.liquid`, `.twig`, `.njk`, `.erb` and `.blade.php` work even with no dedicated language extension installed (VS Code reports those files as plain text).
 - Add **Templet: Diagnose Current File**, reporting the resolved dialect, available keywords and snippets, suggestion state, and what the abbreviation before the cursor expands to.
 - Fix `npm test` on Node 20: glob expansion in `node --test` arguments requires Node 22, so the runner now searches the compiled output directory instead.
