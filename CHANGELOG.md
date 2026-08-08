@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Tag the suggestion's preview with HTML when the document language has no grammar, so a `.liquid` file opened as plain text still gets a syntax-coloured preview instead of flat grey text.
+
 - Preview the expansion as **ghost text in the editor** while typing, accepted with `Tab`, via an inline completion provider. The suggestion list could only show the expansion in its details pane, which VS Code keeps collapsed. Toggle with `templet.inlinePreview`.
 - Share the extraction, gating and expansion between the suggestion and the inline preview so the two cannot disagree about when Templet acts.
 

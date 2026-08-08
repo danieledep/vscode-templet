@@ -18,6 +18,19 @@ export const TRIGGER_CHARACTERS = ['>', '+', '^', '*', '.', '#', ':', '|', ')', 
  * The details pane is collapsed until you press `Ctrl+Space` or click the chevron;
  * `InlinePreviewProvider` puts the same preview in the editor instead.
  */
+/**
+ * Language to tag the fenced preview with.
+ *
+ * A `.liquid` file with no language extension installed arrives as `plaintext`, and
+ * VS Code has no grammar for that, so the preview renders as flat uncoloured text.
+ * Every supported dialect embeds HTML, so that is the useful fallback — the markup
+ * gets highlighted even when the template tags do not.
+ */
+function fenceLanguage(document: vscode.TextDocument): string {
+	const language = document.languageId;
+	return language === 'plaintext' || language === 'plain' ? 'html' : language;
+}
+
 export class AbbreviationCompletionProvider implements vscode.CompletionItemProvider {
 	constructor(private readonly configs: ConfigCache) {}
 
@@ -39,7 +52,7 @@ export class AbbreviationCompletionProvider implements vscode.CompletionItemProv
 		item.detail = 'Templet';
 		item.documentation = new vscode.MarkdownString().appendCodeblock(
 			toPlainText(offer.expanded),
-			document.languageId,
+			fenceLanguage(document),
 		);
 		item.insertText = new vscode.SnippetString(offer.expanded);
 		item.range = offer.range;

@@ -48,7 +48,13 @@ if>div.card>image
 
 The same expansion is also offered in the suggestion list, with the markup rendered in its details pane.
 
-**If you see the suggestion list but no ghost text**, that's expected with both on: VS Code hides inline suggestions while the suggest widget is open, and the widget's details pane stays collapsed until you press `Ctrl+Space`, which makes the preview look missing. Pick whichever you prefer:
+**You get one or the other, not both.** VS Code hides inline suggestions while the suggest widget is open, and `templet.suggest` is on by default — so out of the box you see the list, not the ghost text. To get the in-editor preview, turn the list off:
+
+```json
+"templet.suggest": false
+```
+
+Note that ghost text is always dimmed: VS Code renders inline suggestions in a single muted colour with no syntax highlighting, and no API changes that. Syntax-coloured previews only exist in the suggestion details pane — which is where Emmet's colored preview lives too. Pick whichever you prefer:
 
 | Want | Setting |
 | --- | --- |
