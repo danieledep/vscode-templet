@@ -4,6 +4,7 @@ import { AbbreviationError, compose, involvesTemplet, preview } from './composer
 import type { ComposerConfig } from './composer';
 import { ConfigCache, dialectFor } from './config';
 import { AbbreviationCompletionProvider, TRIGGER_CHARACTERS } from './suggest';
+import { InlinePreviewProvider } from './inline';
 
 /**
  * The indentation the composer should emit. VS Code re-indents snippet text on
@@ -228,6 +229,11 @@ export function activate(context: vscode.ExtensionContext): void {
 			[{ scheme: 'file' }, { scheme: 'untitled' }],
 			new AbbreviationCompletionProvider(configs),
 			...TRIGGER_CHARACTERS,
+		),
+		// Ghost text in the editor itself, rather than in the suggest widget.
+		vscode.languages.registerInlineCompletionItemProvider(
+			[{ scheme: 'file' }, { scheme: 'untitled' }],
+			new InlinePreviewProvider(configs),
 		),
 	);
 }

@@ -130,6 +130,12 @@
           "description": "Suggest the expansion of the abbreviation before the cursor as you type, previewing the result in the suggestion details.",
           "scope": "resource"
         },
+        "templet.inlinePreview": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Preview the expansion as ghost text in the editor while you type, accepted with `Tab`. VS Code hides inline suggestions while the suggestion list is open, so turn off `#templet.suggest#` to leave only the ghost text.",
+          "scope": "resource"
+        },
         "templet.suggestPlainEmmet": {
           "type": "boolean",
           "default": false,

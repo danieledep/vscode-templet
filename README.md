@@ -35,23 +35,30 @@ The input box previews the expansion as you type, so you can see the shape befor
 
 ### Preview as you type in the editor
 
-You don't have to open the input box at all. Type an abbreviation directly in a template file and it shows up in the suggestion list, with the expanded markup rendered in the details pane — the same way Emmet's own abbreviation completion works. Accept it with `Enter` or `Tab`.
+You don't have to open the input box at all. Type an abbreviation directly in a template file and the expansion appears **as ghost text in the code**, accepted with `Tab`:
 
-```
-if>div.card#hero>image      ← typing this in a .liquid file
-┌──────────────────────────────────────────┐
-│ if>div.card#hero>image        Templet    │  ← suggestion
-├──────────────────────────────────────────┤
-│ {% if condition %}                       │  ← details pane
-│   <div class="card" id="hero">           │
-│     <img src="src" alt="alt" …>          │
-│ {% endif %}                              │
-└──────────────────────────────────────────┘
+```liquid
+if>div.card>image
+{% if condition %}                  ← ghost text, greyed out
+    <div class="card">
+        <img src="src" alt="alt">
+    </div>
+{% endif %}
 ```
 
-By default the suggestion appears only when the abbreviation uses a **keyword or a Templet snippet** — something Emmet cannot expand on its own. Plain abbreviations like `ul>li*3` are left to VS Code's built-in Emmet so you don't get two competing suggestions for the same thing. If you haven't pointed Emmet at your template language via `emmet.includeLanguages`, set `templet.suggestPlainEmmet` to `true` and Templet will offer those too.
+The same expansion is also offered in the suggestion list, with the markup rendered in its details pane.
 
-Turn the whole thing off with `templet.suggest: false`.
+**If you see the suggestion list but no ghost text**, that's expected with both on: VS Code hides inline suggestions while the suggest widget is open, and the widget's details pane stays collapsed until you press `Ctrl+Space`, which makes the preview look missing. Pick whichever you prefer:
+
+| Want | Setting |
+| --- | --- |
+| Ghost text only | `templet.suggest: false` |
+| List only | `templet.inlinePreview: false` |
+| List, previewed inline as you move through it | VS Code's `editor.suggest.preview: true` |
+
+### What gets suggested
+
+By default, only abbreviations using a **keyword or a Templet snippet** — something Emmet cannot expand on its own. Plain abbreviations like `ul>li*3` are left to VS Code's built-in Emmet so you don't get two competing suggestions for the same thing. If you haven't pointed Emmet at your template language via `emmet.includeLanguages`, set `templet.suggestPlainEmmet` to `true` and Templet will offer those too.
 
 ### Wrapping a selection
 
@@ -191,7 +198,8 @@ It must be strict JSON — comments and trailing commas are not supported. Mista
 | `templet.keywords` | `{}` | Keyword tables, merged over the built-in dialects. |
 | `templet.languages` | `{}` | Language id → dialect, merged over the built-in mapping. |
 | `templet.preview` | `true` | Live preview under the input box. |
-| `templet.suggest` | `true` | Suggest expansions as you type in the editor. |
+| `templet.inlinePreview` | `true` | Preview the expansion as ghost text in the editor. |
+| `templet.suggest` | `true` | Also offer the expansion in the suggestion list. |
 | `templet.suggestPlainEmmet` | `false` | Also suggest abbreviations using no keyword or snippet. |
 | `templet.configFile` | `templet.json` | Workspace-relative project config. |
 
