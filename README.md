@@ -195,6 +195,17 @@ It must be strict JSON — comments and trailing commas are not supported. Mista
 | `templet.suggestPlainEmmet` | `false` | Also suggest abbreviations using no keyword or snippet. |
 | `templet.configFile` | `templet.json` | Workspace-relative project config. |
 
+## Troubleshooting
+
+Run **Templet: Diagnose Current File** from the Command Palette. It prints, for the current file, the language id, the dialect it resolved to, the available keywords and snippets, whether suggestions are on, and what the abbreviation before your cursor would expand to.
+
+The usual causes of "nothing happens":
+
+- **The language maps to no dialect.** Templet is inert in a file whose dialect is unknown, which is what stops a snippet named `card` from appearing in a `.ts` file. The diagnostic flags this. Point a language at a dialect with `templet.languages`, e.g. `{ "html": "liquid" }`.
+- **The file isn't recognised.** VS Code has no built-in knowledge of `.liquid`, `.twig`, `.njk` or `.erb`, so with no dedicated language extension installed those files come through as **Plain Text** — check the language indicator in the status bar. Templet falls back to the file extension so it still works, but install a language extension for syntax highlighting.
+- **Snippets aren't configured.** `templet.snippets` starts empty. `image` and `card` in this README are examples, not built-ins; without them `if>div>image` produces a literal `<image>` tag.
+- **The suggestion is gated.** By default only abbreviations using a keyword or snippet are suggested. See the section above.
+
 ## Known limitations
 
 - **Inline expansion stops at whitespace.** Emmet's extractor finds the abbreviation before the caret, so arguments containing spaces (`for:item in items`) need the input box.

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Resolve the dialect from the file extension when the language id maps to nothing, so `.liquid`, `.twig`, `.njk`, `.erb` and `.blade.php` work even with no dedicated language extension installed (VS Code reports those files as plain text).
+- Add **Templet: Diagnose Current File**, reporting the resolved dialect, available keywords and snippets, suggestion state, and what the abbreviation before the cursor expands to.
+- Fix `npm test` on Node 20: glob expansion in `node --test` arguments requires Node 22, so the runner now searches the compiled output directory instead.
+- Set `noEmitOnError` so a build with type errors fails the pre-launch task rather than emitting JavaScript that fails at activation.
+
 - Preview expansions as you type in the editor, via a completion item whose details pane shows the expanded markup — the same shape as Emmet's own abbreviation completion. Gated to abbreviations using a keyword or snippet so it does not duplicate Emmet's suggestions; widen it with `templet.suggestPlainEmmet`, or disable it with `templet.suggest`.
 - Resolved configuration is cached per workspace folder and invalidated on settings, config-file and folder changes, since the suggestion path resolves it on every keystroke.
 
