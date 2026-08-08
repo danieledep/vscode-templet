@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 import { extract } from 'emmet';
 import { AbbreviationError, compose, preview } from './composer';
 import type { ComposerConfig } from './composer';
-import { dialectFor, resolveConfig } from './config';
+import { ConfigCache, dialectFor } from './config';
+import { AbbreviationCompletionProvider, TRIGGER_CHARACTERS } from './suggest';
 
 /**
  * The indentation the composer should emit. VS Code re-indents snippet text on
@@ -81,16 +82,13 @@ function reportProblems(problems: string[], output: vscode.OutputChannel): void 
 	);
 }
 
-async function expandCommand(output: vscode.OutputChannel): Promise<void> {
+async function expandCommand(configs: ConfigCache, output: vscode.OutputChannel): Promise<void> {
 	const editor = vscode.window.activeTextEditor;
 	if (!editor) {
 		return;
 	}
 
-	const problems: string[] = [];
-	const config = await resolveConfig(editor.document, problems);
-	reportProblems(problems, output);
-
+	const config = await configs.get(editor.document);
 	const dialect = dialectFor(editor.document, config);
 	const selection = editor.document.getText(editor.selection);
 	const options = { indent: indentUnitFor(editor), selection: selection || undefined };
@@ -114,7 +112,10 @@ async function expandCommand(output: vscode.OutputChannel): Promise<void> {
  * expand works. Emmet's extractor finds the boundary, so it stops at whitespace —
  * arguments containing spaces need the input box instead.
  */
-async function expandInlineCommand(output: vscode.OutputChannel): Promise<void> {
+async function expandInlineCommand(
+	configs: ConfigCache,
+	output: vscode.OutputChannel,
+): Promise<void> {
 	const editor = vscode.window.activeTextEditor;
 	if (!editor) {
 		return;
@@ -128,10 +129,7 @@ async function expandInlineCommand(output: vscode.OutputChannel): Promise<void> 
 		return;
 	}
 
-	const problems: string[] = [];
-	const config = await resolveConfig(editor.document, problems);
-	reportProblems(problems, output);
-
+	const config = await configs.get(editor.document);
 	const range = new vscode.Range(caret.line, found.start, caret.line, found.end);
 	try {
 		const snippet = new vscode.SnippetString(
@@ -147,10 +145,23 @@ async function expandInlineCommand(output: vscode.OutputChannel): Promise<void> 
 
 export function activate(context: vscode.ExtensionContext): void {
 	const output = vscode.window.createOutputChannel('Templet');
+	const configs = new ConfigCache((problems) => reportProblems(problems, output));
+
 	context.subscriptions.push(
 		output,
-		vscode.commands.registerCommand('templet.expand', () => expandCommand(output)),
-		vscode.commands.registerCommand('templet.expandInline', () => expandInlineCommand(output)),
+		configs,
+		vscode.commands.registerCommand('templet.expand', () => expandCommand(configs, output)),
+		vscode.commands.registerCommand('templet.expandInline', () =>
+			expandInlineCommand(configs, output),
+		),
+		// Registered for every file rather than a fixed language list, so a dialect
+		// added through `templet.languages` works without reloading the window. The
+		// provider bails immediately for languages that have no dialect.
+		vscode.languages.registerCompletionItemProvider(
+			[{ scheme: 'file' }, { scheme: 'untitled' }],
+			new AbbreviationCompletionProvider(configs),
+			...TRIGGER_CHARACTERS,
+		),
 	);
 }
 

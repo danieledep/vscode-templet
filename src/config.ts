@@ -168,3 +168,81 @@ export async function resolveConfig(
 export function dialectFor(document: vscode.TextDocument, config: ComposerConfig): string {
 	return config.languages[document.languageId] ?? document.languageId;
 }
+
+/**
+ * Caches the resolved configuration per workspace folder.
+ *
+ * The completion provider resolves configuration on every keystroke, which cannot
+ * mean re-reading `templet.json` from disk each time. Entries are dropped when the
+ * settings change, when the config file changes, or when the folder layout changes,
+ * so an edit still takes effect immediately.
+ */
+export class ConfigCache implements vscode.Disposable {
+	private readonly entries = new Map<string, Promise<ComposerConfig>>();
+	private readonly listeners: vscode.Disposable[] = [];
+	private watchers: vscode.FileSystemWatcher[] = [];
+
+	constructor(private readonly onProblems: (problems: string[]) => void) {
+		this.listeners.push(
+			vscode.workspace.onDidChangeConfiguration((event) => {
+				if (event.affectsConfiguration('templet')) {
+					this.refresh();
+				}
+			}),
+			vscode.workspace.onDidChangeWorkspaceFolders(() => this.refresh()),
+		);
+		this.watch();
+	}
+
+	get(document: vscode.TextDocument): Promise<ComposerConfig> {
+		const folder = vscode.workspace.getWorkspaceFolder(document.uri);
+		const key = folder?.uri.toString() ?? '';
+
+		let cached = this.entries.get(key);
+		if (!cached) {
+			const problems: string[] = [];
+			cached = resolveConfig(document, problems).then((config) => {
+				this.onProblems(problems);
+				return config;
+			});
+			this.entries.set(key, cached);
+		}
+		return cached;
+	}
+
+	/** Watches each folder's config file. Only the cache is dropped on a change. */
+	private watch(): void {
+		for (const folder of vscode.workspace.workspaceFolders ?? []) {
+			const name = vscode.workspace
+				.getConfiguration('templet', folder.uri)
+				.get<string>('configFile', 'templet.json');
+			if (!name) {
+				continue;
+			}
+			const watcher = vscode.workspace.createFileSystemWatcher(
+				new vscode.RelativePattern(folder, name),
+			);
+			const clear = () => this.entries.clear();
+			watcher.onDidChange(clear);
+			watcher.onDidCreate(clear);
+			watcher.onDidDelete(clear);
+			this.watchers.push(watcher);
+		}
+	}
+
+	/** Rebuilds watchers as well, since the configured file name may have changed. */
+	private refresh(): void {
+		this.entries.clear();
+		for (const watcher of this.watchers) {
+			watcher.dispose();
+		}
+		this.watchers = [];
+		this.watch();
+	}
+
+	dispose(): void {
+		for (const disposable of [...this.listeners, ...this.watchers]) {
+			disposable.dispose();
+		}
+	}
+}

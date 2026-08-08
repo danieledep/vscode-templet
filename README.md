@@ -33,6 +33,26 @@ Extending Emmet's own snippet system doesn't work either: markup snippets have t
 
 The input box previews the expansion as you type, so you can see the shape before committing to it.
 
+### Preview as you type in the editor
+
+You don't have to open the input box at all. Type an abbreviation directly in a template file and it shows up in the suggestion list, with the expanded markup rendered in the details pane — the same way Emmet's own abbreviation completion works. Accept it with `Enter` or `Tab`.
+
+```
+if>div.card#hero>image      ← typing this in a .liquid file
+┌──────────────────────────────────────────┐
+│ if>div.card#hero>image        Templet    │  ← suggestion
+├──────────────────────────────────────────┤
+│ {% if condition %}                       │  ← details pane
+│   <div class="card" id="hero">           │
+│     <img src="src" alt="alt" …>          │
+│ {% endif %}                              │
+└──────────────────────────────────────────┘
+```
+
+By default the suggestion appears only when the abbreviation uses a **keyword or a Templet snippet** — something Emmet cannot expand on its own. Plain abbreviations like `ul>li*3` are left to VS Code's built-in Emmet so you don't get two competing suggestions for the same thing. If you haven't pointed Emmet at your template language via `emmet.includeLanguages`, set `templet.suggestPlainEmmet` to `true` and Templet will offer those too.
+
+Turn the whole thing off with `templet.suggest: false`.
+
 ### Wrapping a selection
 
 Select `<button>Delete</button>`, run **Expand Abbreviation…**, and type `if:user.admin>div.admin-panel`:
@@ -171,6 +191,8 @@ It must be strict JSON — comments and trailing commas are not supported. Mista
 | `templet.keywords` | `{}` | Keyword tables, merged over the built-in dialects. |
 | `templet.languages` | `{}` | Language id → dialect, merged over the built-in mapping. |
 | `templet.preview` | `true` | Live preview under the input box. |
+| `templet.suggest` | `true` | Suggest expansions as you type in the editor. |
+| `templet.suggestPlainEmmet` | `false` | Also suggest abbreviations using no keyword or snippet. |
 | `templet.configFile` | `templet.json` | Workspace-relative project config. |
 
 ## Known limitations

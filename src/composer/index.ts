@@ -1,4 +1,5 @@
 export { compose, AbbreviationError } from './compose';
+export { involvesTemplet } from './classify';
 export { preview } from './preview';
 export { BUILTIN_DIALECTS, BUILTIN_LANGUAGES } from './dialects';
 export { toPlainText } from './snippet';
