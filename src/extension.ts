@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { extract } from 'emmet';
-import { AbbreviationError, compose, involvesTemplet, preview } from './composer';
-import type { ComposerConfig } from './composer';
+import { AbbreviationError, compose, involvesTemplet } from './composer';
+import { promptForAbbreviation, targetRange, type PreviewMode } from './prompt';
 import { ConfigCache, dialectFor } from './config';
 import { AbbreviationCompletionProvider, TRIGGER_CHARACTERS } from './suggest';
 import { InlinePreviewProvider } from './inline';
@@ -16,48 +16,6 @@ function indentUnitFor(editor: vscode.TextEditor): string {
 	}
 	const tabSize = typeof editor.options.tabSize === 'number' ? editor.options.tabSize : 4;
 	return ' '.repeat(tabSize);
-}
-
-/**
- * Asks for an abbreviation, previewing the expansion under the box as it is typed.
- *
- * The preview goes in `validationMessage` at Info severity: it is the one place
- * VS Code will render arbitrary text under an input box without blocking accept.
- */
-function promptForAbbreviation(
-	dialect: string,
-	config: ComposerConfig,
-	options: { indent: string; selection?: string },
-	showPreview: boolean,
-): Promise<string | undefined> {
-	return new Promise((resolve) => {
-		const box = vscode.window.createInputBox();
-		box.title = options.selection ? `Templet — wrap selection (${dialect})` : `Templet (${dialect})`;
-		box.prompt = 'Abbreviation';
-		box.placeholder = 'if>div.card#hero>image';
-
-		let accepted: string | undefined;
-
-		box.onDidChangeValue((value) => {
-			if (!showPreview) {
-				return;
-			}
-			const rendered = preview(value, dialect, config, options);
-			box.validationMessage = rendered
-				? { message: rendered, severity: vscode.InputBoxValidationSeverity.Info }
-				: undefined;
-		});
-		box.onDidAccept(() => {
-			accepted = box.value;
-			box.hide();
-		});
-		box.onDidHide(() => {
-			box.dispose();
-			resolve(accepted);
-		});
-
-		box.show();
-	});
 }
 
 function report(error: unknown, output: vscode.OutputChannel): void {
@@ -92,17 +50,24 @@ async function expandCommand(configs: ConfigCache, output: vscode.OutputChannel)
 	const config = await configs.get(editor.document);
 	const dialect = dialectFor(editor.document, config);
 	const selection = editor.document.getText(editor.selection);
-	const options = { indent: indentUnitFor(editor), selection: selection || undefined };
-	const showPreview = vscode.workspace.getConfiguration('templet').get<boolean>('preview', true);
+	const indent = indentUnitFor(editor);
+	const mode = vscode.workspace
+		.getConfiguration('templet', editor.document.uri)
+		.get<PreviewMode>('preview', 'editor');
 
-	const abbr = await promptForAbbreviation(dialect, config, options, showPreview);
-	if (!abbr?.trim()) {
+	// Captured before the prompt, which moves the selection while previewing.
+	const range = targetRange(editor);
+	const abbr = await promptForAbbreviation(editor, { dialect, config, indent, selection, mode });
+	if (!abbr) {
 		return;
 	}
 
 	try {
-		const snippet = new vscode.SnippetString(compose(abbr, dialect, config, options));
-		await editor.insertSnippet(snippet);
+		const expanded = compose(abbr, dialect, config, {
+			indent,
+			selection: selection || undefined,
+		});
+		await editor.insertSnippet(new vscode.SnippetString(expanded), range);
 	} catch (error) {
 		report(error, output);
 	}

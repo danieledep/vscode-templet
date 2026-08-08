@@ -119,10 +119,20 @@
           "scope": "resource"
         },
         "templet.preview": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show a live preview of the expansion while typing in the abbreviation input box.",
-          "scope": "window"
+          "type": "string",
+          "enum": [
+            "editor",
+            "input",
+            "off"
+          ],
+          "enumDescriptions": [
+            "Show the expansion in the document itself as you type, reverting it if you cancel.",
+            "Render the expansion under the input box.",
+            "No preview."
+          ],
+          "default": "editor",
+          "description": "How the abbreviation input box previews the expansion.",
+          "scope": "resource"
         },
         "templet.suggest": {
           "type": "boolean",
