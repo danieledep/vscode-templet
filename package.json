@@ -7,7 +7,7 @@
   "publisher": "danieledep",
   "repository": {
     "type": "git",
-    "url": "https://github.com/danieledep/vscode-if-only-emmet.git"
+    "url": "https://github.com/danieledep/vscode-templet.git"
   },
   "engines": {
     "vscode": "^1.85.0"
@@ -34,9 +34,9 @@
     "color": "#0F172A",
     "theme": "dark"
   },
-  "homepage": "https://github.com/danieledep/vscode-if-only-emmet#readme",
+  "homepage": "https://github.com/danieledep/vscode-templet#readme",
   "bugs": {
-    "url": "https://github.com/danieledep/vscode-if-only-emmet/issues"
+    "url": "https://github.com/danieledep/vscode-templet/issues"
   },
   "main": "./out/extension.js",
   "activationEvents": [
@@ -174,6 +174,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && cd out && node --test",
+    "package": "vsce package",
     "vscode:prepublish": "npm run compile"
   },
   "dependencies": {
@@ -182,6 +183,7 @@
   "devDependencies": {
     "@types/node": "^20.19.43",
     "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.9.2",
     "typescript": "^5.9.3"
   }
 }
