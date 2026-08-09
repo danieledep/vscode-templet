@@ -128,7 +128,6 @@ export async function promptForAbbreviation(
 		const box = vscode.window.createInputBox();
 		box.title = selection ? `Templet — wrap selection (${dialect})` : `Templet (${dialect})`;
 		box.prompt = 'Abbreviation';
-		box.placeholder = 'if>div.card#hero>image';
 
 		let accepted: string | undefined;
 
