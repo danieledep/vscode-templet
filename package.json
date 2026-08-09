@@ -29,6 +29,15 @@
     "snippets",
     "templating"
   ],
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#0F172A",
+    "theme": "dark"
+  },
+  "homepage": "https://github.com/danieledep/vscode-if-only-emmet#readme",
+  "bugs": {
+    "url": "https://github.com/danieledep/vscode-if-only-emmet/issues"
+  },
   "main": "./out/extension.js",
   "activationEvents": [
     "onStartupFinished"
