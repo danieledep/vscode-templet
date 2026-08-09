@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix the suggestion disappearing as soon as you typed past a trigger character. The completion list was returned as complete, so VS Code cached it and re-filtered locally instead of re-querying; by `if>div` the cached item still carried the `filterText` it had at `if>`, no longer matched the typed word, and was dropped — leaving only built-in Emmet's suggestion.
+
 - Warn on startup, and when settings change, if both `templet.suggest` and `templet.inlinePreview` are off — that combination silently disables typing in the editor and hands abbreviations to built-in Emmet, which looks like a bug rather than a setting.
 - Mark the suggestion "Templet" in the list, so it is distinguishable from the identically-labelled entry built-in Emmet offers for the same text.
 - Report both switches in **Templet: Diagnose Current File**.
