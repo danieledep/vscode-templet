@@ -40,7 +40,7 @@ export class AbbreviationCompletionProvider implements vscode.CompletionItemProv
 	async provideCompletionItems(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-	): Promise<vscode.CompletionItem[] | undefined> {
+	): Promise<vscode.CompletionList | undefined> {
 		try {
 			return await this.offer(document, position);
 		} catch (error) {
@@ -56,7 +56,7 @@ export class AbbreviationCompletionProvider implements vscode.CompletionItemProv
 	private async offer(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-	): Promise<vscode.CompletionItem[] | undefined> {
+	): Promise<vscode.CompletionList | undefined> {
 		const settings = vscode.workspace.getConfiguration('templet', document.uri);
 		if (!settings.get<boolean>('suggest', true)) {
 			return undefined;
@@ -84,6 +84,14 @@ export class AbbreviationCompletionProvider implements vscode.CompletionItemProv
 		item.filterText = offer.abbreviation;
 		item.sortText = '0';
 		item.preselect = true;
-		return [item];
+
+		// isIncomplete is the whole ballgame. Without it VS Code caches this list and
+		// only re-filters it locally as more characters arrive, so the moment you type
+		// something that is not a trigger character — the `d` of `if>div` — the item
+		// is still carrying the filterText it had at `if>`, no longer matches the typed
+		// word, and is silently dropped. Marking the list incomplete re-queries on
+		// every keystroke, which is what keeps the abbreviation in step with what has
+		// been typed.
+		return new vscode.CompletionList([item], true);
 	}
 }
